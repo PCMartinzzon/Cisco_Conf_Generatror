@@ -46,7 +46,7 @@ while True: # For a repeated input.
             else:
                 print("Incorrect input")
                 continue
-        interfaceConfiguration = "" # Empty string to store the interfaceconfiguration below in.
+        interfaceConfiguration = "" # Empty string to store the interface configuration below in.
         for value in interfaceList:
             interfaceConfiguration = interfaceConfiguration + "interface " + value["interface"] + "\n" + "ip address " + value["IP"] + " " + value["Subnetmask"] + "\n" + "description " + value["Description"] + "\n" + "no shutdown\n" # To later get the values from the dictionary.
         banner = input("Enter the desired banner: ")
