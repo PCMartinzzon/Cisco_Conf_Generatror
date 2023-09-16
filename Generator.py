@@ -20,15 +20,15 @@ while True: # For a repeated input.
     if choice == 'router':
         r = open(f"{hostname}.txt", "w") # Creates a textfile with the name of the host.
         while True:
-            wantInterface = input("Do you want to configure an interface? ").lower()
-            if wantInterface == "yes":
+            wantInterface = input("Do you want to configure an interface? Yes or no? ").lower()
+            if wantInterface == "yes" or wantInterface == "y":
                 interface = input("Enter the desired interface: ").lower()
                 ip = input("Enter the desired IP-address: ").lower()
                 sub = input("Enter the desired subnetmask: ").lower()
                 description = input("Enter the desired description to the interface: ").lower()
                 interfaceDict = {"interface":interface, "IP":ip, "Subnetmask":sub, "Description":description} # Creates a dictionary with characteristics of an interface.
                 interfaceList.append(interfaceDict)
-            elif wantInterface == "no":
+            elif wantInterface == "no" or wantInterface == "n":
                 break
 
         username = input("Enter the desired username for SSH access: ")
@@ -37,10 +37,10 @@ while True: # For a repeated input.
 
         while True:
             encryption = input("Do you want to apply encryption? Yes or no? ").lower()
-            if encryption == 'yes':
+            if encryption == 'yes' or encryption == "y":
                 encryption1 = "service password-encryption"
                 break
-            elif encryption == 'no':
+            elif encryption == 'no' or encryption == 'n':
                 encryption1 = "no service password-encryption"
                 break
             else:
@@ -73,8 +73,9 @@ while True: # For a repeated input.
                 f"ip ssh version 2\n!\n{encryption1}\n!\n")
 
         while True: # For a repeated input.
-            routing = input("Do you want to use a routing protocol? The available option is OSPF: ").lower()
-            if routing == "yes":
+            routing = input("Do you want to use a routing protocol? The available option is: \n 1-OSPF \n 2-EIGRP \n 3-No routing protocol \nOption: ").lower()
+
+            if routing == "1":  # OSPF
                 routingList = [] # Empty list which is used later to store the routing entries in.
                 while True:
                     routingID = input("Enter the desired routerID for OSPF. Type 'end' to stop: ")
@@ -99,27 +100,51 @@ while True: # For a repeated input.
                         routingConfiguration = routingConfiguration + " area " + area["routerArea"] + "\n"
                 r.write(routingConfiguration)
                 break # Explicitly breaks out of the While-loop so that it continues with the rest of the script.
-            elif routing == "no":
+
+            elif routing == "2":    # EIGRP
+                routingList = [] # Empty list which is used later to store the routing entries in.
+                while True:
+                    routingAS = input("Enter the desired EIGRP autonomous system number. Type 'end' to stop: ")
+                    if routingAS == "end":
+                        break
+                    routingInstance = {"autonomousSystem": routingAS, "networks": []} # Dictionary of autonomous system number and networks.
+                    while True:
+                        networkAddress = input("Enter the desired network address for EIGRP. Type 'end' to stop: ")
+                        if networkAddress == "end":
+                            break
+                        wildcardMask = input("Enter the corresponding wildcard mask: ")
+                        routingNetwork = {"networkAddress": networkAddress, "wildcardMask": wildcardMask} # Dictionary of network addresses and wildcard masks.
+                        routingInstance["networks"].append(routingNetwork) # Stores the networks in the dictionary.
+                    routingConfiguration = ""
+                # Does a for-loop in the routingList, where the dictionary is in, to obtain the values.
+                for value in routingList:
+                    routingConfiguration += "router eigrp " + value["autonomousSystem"] + "\n"
+                    for network in value["networks"]:
+                        routingConfiguration += "network " + network["networkAddress"] + " " + network["wildcardMask"] + "\n"
+                r.write(routingConfiguration)
+                break # Explicitly breaks out of the while-loop so that it continues with the rest of the script.
+
+            elif routing == "3":
                 break
             else:
                 print("Wrong value")
         while True:
             static = input("Do you want to add (another) static route? Yes or no? ").lower()
-            if static == "yes":
+            if static == "yes" or static == "y":
                 staticIP = input("Enter the desired IP-address for the static route: ").lower()
                 staticSub = input("Enter the desired subnetmask for the static route: ").lower()
                 nextHop = input("Enter the next-hop address or the interface for the static route: ").lower()
                 r.write(f"!\nip route {staticIP} {staticSub} {nextHop}\n")
-            elif static == "no":
+            elif static == "no" or static == "n":
                 break
 
         while True:
             r.write("!\n")
             saveConfig = input("Do you want to copy your running configuration to the startup configuration? ")
-            if saveConfig == "yes":
+            if saveConfig == "yes" or saveConfig == "y":
                 r.write("do write")
                 break
-            elif saveConfig == "no":
+            elif saveConfig == "no" or saveConfig == "n":
                 print("Running configuration won't be saved; if you reboot your intermediary network device, you'll lose the configuration you've set.")
                 break
             else:
@@ -180,10 +205,10 @@ while True: # For a repeated input.
             if layer == '2':
                 while True:
                     reach = input("Do you want to enter (another) range? Yes or no? Type 'end' to stop: ").lower()
-                    if reach == "yes":
+                    if reach == "yes" or reach == "y":
                         interfaces = input("Enter the desired range of interfaces: ").lower()
                         s.write(f"interface range {interfaces}\nduplex full\nno shutdown\n")
-                    elif reach == "no":
+                    elif reach == "no" or reach == "n":
                         interface = input("Enter an interface to configure: ").lower()
                         s.write(f"interface {interface}\nduplex full\nno shutdown\n")
                     elif reach == "end":
@@ -229,7 +254,7 @@ while True: # For a repeated input.
                 while True:
                     static = input("Do you want to add (another) static route? Yes or no? ")
 
-                    if static == "yes":
+                    if static == "yes" or static == "y":
                         staticIP = input("Enter an IP-address for the static route: ").lower()
                         staticSub = input("Enter a subnetmask for the static route: ").lower()
                         nextHop = input("Enter a next-hop address or interface for the static route: ").lower()
@@ -245,10 +270,10 @@ while True: # For a repeated input.
                 continue
         while True:
             saveConfig = input("Do you want to copy your running configuration to the startup configuration?\n")
-            if saveConfig == "yes":
+            if saveConfig == "yes" or saveConfig == "y":
                 s.write("do write")
                 break
-            elif saveConfig == "no":
+            elif saveConfig == "no" or saveConfig == "n":
                 print("\n*WARNING:* Running configuration won't be saved; if you reboot your intermediary network device, you'll lose the configuration you've set.\n")
                 break
             else:
