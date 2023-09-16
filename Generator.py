@@ -1,5 +1,3 @@
-"""Imports the `os` module. Sets variable for `os.getcwd()`"""
-
 import os
 dir_path = os.getcwd()
 
@@ -14,9 +12,7 @@ vty = input("Enter the desired vty password: ")
 interfaceList = [] # Empty list which is used later to store the interfaces in.
 
 while True: # For a repeated input.
-
     choice = input("Do you want to configure a router or switch? ").lower()
-
     if choice == 'router':
         r = open(f"{hostname}.txt", "w") # Creates a textfile with the name of the host.
         while True:
@@ -46,6 +42,7 @@ while True: # For a repeated input.
             else:
                 print("Incorrect input")
                 continue
+
         interfaceConfiguration = "" # Empty string to store the interface configuration below in.
         for value in interfaceList:
             interfaceConfiguration = interfaceConfiguration + "interface " + value["interface"] + "\n" + "ip address " + value["IP"] + " " + value["Subnetmask"] + "\n" + "description " + value["Description"] + "\n" + "no shutdown\n" # To later get the values from the dictionary.
@@ -73,31 +70,44 @@ while True: # For a repeated input.
                 f"ip ssh version 2\n!\n{encryption1}\n!\n")
 
         while True: # For a repeated input.
-            routing = input("Do you want to use a routing protocol? The available option is: \n 1-OSPF \n 2-EIGRP \n 3-No routing protocol \nOption: ").lower()
+            routing = input("Do you want to use a routing protocol? The available option is: \n 1 - OSPF \n 2 - EIGRP \n 3 - No routing protocol \nOption: ").lower()
 
             if routing == "1":  # OSPF
                 routingList = [] # Empty list which is used later to store the routing entries in.
                 while True:
-                    routingID = input("Enter the desired routerID for OSPF. Type 'end' to stop: ")
-                    if routingID == "end":
+                    processID = input("Enter the desired process ID for OSPF. Type 'end' to stop: ")
+                    if processID == "end":
                         break
-                    routingInstance = {"routerID": routingID, "areas": []} # Dictionary of routing ID and areas.
+
+                    routingInstance = {"processID": processID, "areas": []} # Dictionary of routing ID and areas.
                     while True:
                         areaNumber = input("Enter the desired area number for OSPF. Type 'end' to stop: ")
                         if areaNumber == "end":
                             break
+
                         routingInput = input("Enter the desired network addresses: ").lower()
                         wildCardMask = input("Enter the corresponding wildcardmask: ")
-                        routingArea = {"routerArea": areaNumber, "networkAddress": routingInput, "wildcardMask": wildCardMask} # Dictionary of area numbers and network addresses.
+                        routerId = input("Enter the router-id: ")
+
+                        defaultOriginate = input("default-information originate? Yes or No: ").lower()
+                        if defaultOriginate == "yes" or defaultOriginate == "y":
+                                defaultOriginate1 = "default-information originate"
+                        elif defaultOriginate == "no" or defaultOriginate == "n":
+                                defaultOriginate1 = "no default-information originate"
+
+                        routingArea = {"routerArea": areaNumber, "networkAddress": routingInput, "wildcardMask": wildCardMask, "routerId": routerId, "default_originate": defaultOriginate1} # Dictionary of area numbers and network addresses.
                         routingInstance ["areas"].append(routingArea) # Stores the areas in the dictionary.
                     routingList.append(routingInstance) # Stores the routing values (dictionary) in a list.
                 routingConfiguration = ""
+
                 # Does a for-loop in the routinglist, where the dictionary is in, to obtain the values.
                 for value in routingList:
-                    routingConfiguration = routingConfiguration + "router ospf  " + value["routerID"] + "\n"
+                    routingConfiguration = routingConfiguration + "router ospf " + value["processID"] + "\n"
                     for area in value["areas"]:
+                        routingConfiguration = routingConfiguration + "router-id " + area["routerId"] + "\n"
                         routingConfiguration = routingConfiguration + "network " + area["networkAddress"] + " " + area["wildcardMask"]
                         routingConfiguration = routingConfiguration + " area " + area["routerArea"] + "\n"
+                        routingConfiguration = routingConfiguration + area["default_originate"] + "\n"
                 r.write(routingConfiguration)
                 break # Explicitly breaks out of the While-loop so that it continues with the rest of the script.
 
@@ -107,15 +117,20 @@ while True: # For a repeated input.
                     routingAS = input("Enter the desired EIGRP autonomous system number. Type 'end' to stop: ")
                     if routingAS == "end":
                         break
+
                     routingInstance = {"autonomousSystem": routingAS, "networks": []} # Dictionary of autonomous system number and networks.
                     while True:
                         networkAddress = input("Enter the desired network address for EIGRP. Type 'end' to stop: ")
                         if networkAddress == "end":
                             break
+
                         wildcardMask = input("Enter the corresponding wildcard mask: ")
                         routingNetwork = {"networkAddress": networkAddress, "wildcardMask": wildcardMask} # Dictionary of network addresses and wildcard masks.
                         routingInstance["networks"].append(routingNetwork) # Stores the networks in the dictionary.
-                    routingConfiguration = ""
+
+                    routingList.append(routingInstance) # Stores the routing values (dictionary) in a list.
+                routingConfiguration = ""
+
                 # Does a for-loop in the routingList, where the dictionary is in, to obtain the values.
                 for value in routingList:
                     routingConfiguration += "router eigrp " + value["autonomousSystem"] + "\n"
@@ -128,6 +143,7 @@ while True: # For a repeated input.
                 break
             else:
                 print("Wrong value")
+
         while True:
             static = input("Do you want to add (another) static route? Yes or no? ").lower()
             if static == "yes" or static == "y":
@@ -144,11 +160,14 @@ while True: # For a repeated input.
             if saveConfig == "yes" or saveConfig == "y":
                 r.write("do write")
                 break
+
             elif saveConfig == "no" or saveConfig == "n":
                 print("Running configuration won't be saved; if you reboot your intermediary network device, you'll lose the configuration you've set.")
                 break
+
             else:
-                print("You didn't choose a(n) (correct) option. Please try again.")
+                print("You didn't choose a valid option. Please try again.")
+
         r.close()
         break # Explicit break so that the input "Do you want to configure a router or switch? " is not being returned again.
 
