@@ -28,6 +28,9 @@ def create_router_config():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
 
+
+
+
 def create_switch_config():
     dir_path = os.getcwd()
     hostname = switch_hostname_entry.get()
@@ -53,6 +56,7 @@ def create_switch_config():
 # Create a tkinter window
 window = tk.Tk()
 window.title("Network Configuration Generator")
+window.geometry("500x200")
 
 # Create a notebook (tabbed interface)
 notebook = ttk.Notebook(window)
@@ -82,6 +86,9 @@ router_vty_entry.pack()
 
 generate_router_button = tk.Button(router_tab, text="Generate Router Configuration", command=create_router_config)
 generate_router_button.pack()
+
+
+
 
 # Switch Configuration Tab
 switch_tab = ttk.Frame(notebook)
